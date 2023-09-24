@@ -27,6 +27,7 @@ import {
 import type { Model, ModelType } from "../data/models";
 import { useMutationObserver } from "~/integrations/react/hooks/UseMutationObserver";
 import { cn } from "~/lib/utils";
+import { usePlaygroundStore } from "../playground-store";
 
 interface ModelSelectorProps extends PopoverProps {
   types: readonly ModelType[];
@@ -35,7 +36,10 @@ interface ModelSelectorProps extends PopoverProps {
 
 export function ModelSelector({ models, types, ...props }: ModelSelectorProps) {
   const [open, setOpen] = React.useState(false);
-  const [selectedModel, setSelectedModel] = React.useState<Model>(models[0]);
+  const [selectedModel, setSelectedModel] = usePlaygroundStore((s) => [
+    s.model,
+    s.setModel,
+  ]);
   const [peekedModel, setPeekedModel] = React.useState<Model>(models[0]);
 
   return (
@@ -111,7 +115,7 @@ export function ModelSelector({ models, types, ...props }: ModelSelectorProps) {
                         <ModelItem
                           key={model.id}
                           model={model}
-                          isSelected={selectedModel.id === model.id}
+                          isSelected={selectedModel?.id === model.id}
                           onPeek={(model) => setPeekedModel(model)}
                           onSelect={() => {
                             setSelectedModel(model);

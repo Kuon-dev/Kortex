@@ -1,4 +1,4 @@
-import type { Model } from "openai/resources";
+import type { Model } from "./data/models";
 import { create } from "zustand";
 
 // Define the Chat interface
@@ -10,8 +10,8 @@ interface Chat {
 }
 
 // Define the state
-type State = {
-  model: Model | null;
+export type State = {
+  model: Model<string> | null;
   systemPrompt: string;
   messages: Chat[];
   redirects: string;
@@ -25,7 +25,7 @@ type State = {
 };
 
 type Action = {
-  setModel: (model: Model) => void;
+  setModel: (model: Model<string>) => void;
   setSystemPrompt: (prompt: string) => void;
   addMessage: (chat: Chat) => void;
   updateMessage: (id: string, updatedChat: Partial<Chat>) => void;

@@ -6,6 +6,7 @@ import { PresetSave } from "./components/preset-save";
 import { PresetSelector } from "./components/preset-selector";
 import { PresetShare } from "./components/preset-share";
 import { presets } from "./data/presets";
+import { ThemeSwitcher } from "../navigation-bar/theme-switcher";
 
 export const PlaygroundToolbar = () => (
   <>
@@ -19,6 +20,7 @@ export const PlaygroundToolbar = () => (
           <PresetShare />
         </div>
         <PresetActions />
+        <ThemeSwitcher />
       </div>
     </div>
     <Separator />
