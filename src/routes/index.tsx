@@ -25,7 +25,6 @@ const streamChat = server$(async function* () {
 
   // Function to handle token and resolve promise
   const handleLLMNewToken = (token: string) => {
-    console.log({ token });
     if (resolveToken) {
       resolveToken(token);
     }
@@ -53,12 +52,18 @@ const streamChat = server$(async function* () {
 
 export default component$(() => {
   const message = useSignal("");
+  const streamComplete = useSignal(true);
   const handleSubmit = $(async (e: any) => {
+    //reset
+    message.value = "";
+    streamComplete.value = false;
+    // start stream
     const response = await streamChat();
     for await (const i of response) {
-      console.log(i);
       message.value += ` ${i}`;
     }
+    // stream complete
+    streamComplete.value = true;
   });
 
   return (
@@ -73,8 +78,11 @@ export default component$(() => {
               </div>
               <div class="md:order-1">
                 <div class="mt-0 border-0 p-0">
-                  <QPlaygroundPage onDataEmit$={async (e) => handleSubmit(e)} />
-                  {message}
+                  <QPlaygroundPage
+                    onDataEmit$={async (e) => handleSubmit(e)}
+                    streamedMessage={message.value}
+                    isStreamingComplete={streamComplete.value}
+                  />
                 </div>
               </div>
             </div>
