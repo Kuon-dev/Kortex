@@ -4,7 +4,7 @@ import { create } from "zustand";
 // Define the Chat interface
 interface Chat {
   id: string;
-  sender: "user" | "assistant";
+  sender: "user" | "assistant" | "system";
   message: string;
   timestamp: string;
 }
@@ -41,7 +41,7 @@ type Action = {
 
 export const usePlaygroundStore = create<State & Action>((set) => ({
   model: null,
-  systemPrompt: "",
+  systemPrompt: "You are a helpful assistant",
   messages: [],
   redirects: "",
   temperature: [0.9],

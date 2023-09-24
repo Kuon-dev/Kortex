@@ -1,5 +1,9 @@
 import { component$, Slot } from "@builder.io/qwik";
 import type { RequestHandler } from "@builder.io/qwik-city";
+import { qwikify$ } from "@builder.io/qwik-react";
+import { Toaster } from "sonner";
+
+const QToaster = qwikify$(Toaster, { eagerness: "load" });
 
 export const onGet: RequestHandler = async ({ cacheControl }) => {
   // Control caching for this request for best performance and to reduce hosting costs:
@@ -14,8 +18,9 @@ export const onGet: RequestHandler = async ({ cacheControl }) => {
 
 export default component$(() => {
   return (
-    <div class="dark:bg-primary-foreground dark:text-white">
+    <div class="">
       <Slot />
+      <QToaster />
     </div>
   );
 });
