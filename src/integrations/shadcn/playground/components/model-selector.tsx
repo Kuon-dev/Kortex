@@ -25,7 +25,7 @@ import {
 } from "~/integrations/shadcn/ui/popover";
 
 import type { Model, ModelType } from "../data/models";
-import { useMutationObserver } from "~/integrations/react/hooks/UseMutationObserver";
+import { useMutationObserver } from "~/integrations/react/hooks/useMutationObserver";
 import { cn } from "~/lib/utils";
 import { usePlaygroundStore } from "../playground-store";
 

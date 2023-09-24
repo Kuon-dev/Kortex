@@ -50,7 +50,7 @@ export const usePlaygroundStore = create<State & Action>((set) => ({
   frequencyPenalty: [0],
   presencePenalty: [0],
   stop: [],
-  newUserPrompt: "",
+  newUserPrompt: "Tell me a joke",
   setModel: (model) => set({ model }),
   setSystemPrompt: (systemPrompt) => set({ systemPrompt }),
   addMessage: (message) =>

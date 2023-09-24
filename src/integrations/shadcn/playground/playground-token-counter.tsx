@@ -1,11 +1,8 @@
 /** @jsxImportSource react */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { usePlaygroundStore } from "./playground-store";
-// import { type TiktokenModel, encodingForModel } from "js-tiktoken";
 import { useDebounce } from "~/integrations/react/hooks/useDebounce";
 import axios from "axios";
-
-// Web Worker to handle token encoding
 
 export const PlaygroundTokenCounter: React.FC = () => {
   const [totalTokens, setTotalTokens] = useState<number>(0);
@@ -49,6 +46,9 @@ export const PlaygroundTokenCounter: React.FC = () => {
   return (
     <div>
       <p>Total Tokens: {totalTokens}</p>
+      <p>
+        {model && `Estimate cost : ${(totalTokens / 1000) * model.pricing}`}
+      </p>
     </div>
   );
 };

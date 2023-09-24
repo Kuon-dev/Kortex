@@ -11,7 +11,6 @@ export const ThemeSwitcher: React.FC = () => {
 
   const handleClick = () => {
     if (isDisabled) return;
-    console.log(theme);
     toggleTheme();
     setIsDisabled(true);
 
