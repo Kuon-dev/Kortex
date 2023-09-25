@@ -12,15 +12,15 @@ import { useState, useEffect } from "react";
 import { cn } from "~/lib/utils";
 // import { Image } from "@unpic/react"
 const SubmitModelSchema = z.object({
-  model: z.string(),
+  model: z.union([z.string(), z.undefined()]),
   systemPrompt: z.string(),
   messages: z.array(z.any()),
-  temperature: z.number().min(0).max(1),
+  temperature: z.number().min(0).max(2),
   maxLength: z.number().min(0).max(33000),
   topP: z.number().min(0).max(1),
-  frequencyPenalty: z.number().min(0),
-  presencePenalty: z.number().min(0),
-  stop: z.array(z.union([z.null(), z.string()])),
+  frequencyPenalty: z.number().min(0).max(2),
+  presencePenalty: z.number().min(0).max(2),
+  stop: z.optional(z.array(z.string())),
   newUserPrompt: z.string(),
 });
 
@@ -108,7 +108,7 @@ export const PlaygroundPage: React.FC<PlaygroundPageProps> = ({
       newUserPrompt,
     } = store;
 
-    const dataToEmit = {
+    const dataToEmit: SubmitModelSchemaProps = {
       model: model?.name,
       systemPrompt,
       messages,
@@ -117,9 +117,11 @@ export const PlaygroundPage: React.FC<PlaygroundPageProps> = ({
       topP: topP[0],
       frequencyPenalty: frequencyPenalty[0],
       presencePenalty: presencePenalty[0],
-      stop,
       newUserPrompt,
     };
+    if (stop && stop.length > 0) {
+      dataToEmit.stop = stop;
+    }
 
     const zodParse = SubmitModelSchema.safeParse(dataToEmit);
     if (zodParse.success) {
