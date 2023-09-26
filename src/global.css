@@ -82,3 +82,9 @@ body {
     --ring: 180.7 69.2% 45.9%;
   }
 }
+
+p code {
+  background: hsl(var(--card));
+  padding: 0.2rem 0.6rem;
+  border-radius: 5px;
+}

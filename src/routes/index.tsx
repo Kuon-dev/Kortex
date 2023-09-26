@@ -1,6 +1,7 @@
 import { component$, $, useSignal } from "@builder.io/qwik";
 import { qwikify$ } from "@builder.io/qwik-react";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import type { LLMResult } from "langchain/schema";
 import { server$ } from "@builder.io/qwik-city";
 
 import {
@@ -20,6 +21,7 @@ const QPlaygroundSidebar = qwikify$(PlaygroundSidebar, { eagerness: "idle" });
 const streamChat = server$(async function* (e: SubmitModelSchemaProps) {
   console.log("submitted values: ", e);
   let resolveToken: (value: string) => void;
+  let isStreamEnded = false;
   //
   const chat = new ChatOpenAI({
     openAIApiKey: (import.meta as any).env.VITE_OPENAI_API_KEY ?? "",
@@ -42,23 +44,27 @@ const streamChat = server$(async function* (e: SubmitModelSchemaProps) {
     }
   };
 
-  // Make the chat call
+  const handleLLMEnd = (out: LLMResult) => {
+    console.log(out);
+    isStreamEnded = true; // Set the flag to true when the stream ends
+  };
+
   const res = chat.call(
     [new SystemMessage(e.systemPrompt), new HumanMessage(e.newUserPrompt)],
     {
       callbacks: [
         {
           handleLLMNewToken,
+          handleLLMEnd, // Make sure to include this in your callbacks
         },
       ],
     },
   );
 
-  console.log(res);
-
-  // Infinite loop to yield tokens as they come in
-  // This loop will keep running as long as the chat stream is open
   for (;;) {
+    if (isStreamEnded) {
+      return null;
+    } // Break the loop if the stream has ended
     const tokenPromise = new Promise<string>((resolve) => {
       resolveToken = resolve;
     });
@@ -78,10 +84,11 @@ export default component$(() => {
     // start stream
     const response = await streamChat(e);
     for await (const i of response) {
-      message.value += ` ${i}`;
+      message.value += `${i}`;
     }
     // stream complete
     streamComplete.value = true;
+    console.log(streamComplete.value);
   });
 
   return (

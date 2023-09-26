@@ -42,7 +42,8 @@ type Action = {
 
 export const usePlaygroundStore = create<State & Action>((set) => ({
   model: null,
-  systemPrompt: "You are a helpful assistant",
+  systemPrompt:
+    "Pulu is a professional typescript Assistant, ONLY respond in markdown typescript code format, no explaination. Always start with ```typscript",
   messages: [],
   redirects: "",
   temperature: [0.9],
@@ -51,7 +52,7 @@ export const usePlaygroundStore = create<State & Action>((set) => ({
   frequencyPenalty: [0],
   presencePenalty: [0],
   stop: [],
-  newUserPrompt: "Tell me a joke",
+  newUserPrompt: "Sum of 2",
   setModel: (model) => set({ model }),
   setSystemPrompt: (systemPrompt) => set({ systemPrompt }),
   addMessage: (message) =>

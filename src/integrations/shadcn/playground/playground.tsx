@@ -10,6 +10,10 @@ import { PlaygroundTokenCounter } from "./playground-token-counter";
 import type { MessageChat } from "./playground-store";
 import { useState, useEffect } from "react";
 import { cn } from "~/lib/utils";
+import ReactMarkdown from "react-markdown";
+
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 // import { Image } from "@unpic/react"
 const SubmitModelSchema = z.object({
   model: z.union([z.string(), z.undefined()]),
@@ -69,24 +73,24 @@ export const PlaygroundPage: React.FC<PlaygroundPageProps> = ({
   };
 
   useEffect(() => {
-    if (streamedMessage) {
+    let modifiedStream = streamedMessage;
+    const regex = /`` `|` ``/g;
+    modifiedStream = modifiedStream.replace(regex, "```");
+
+    if (modifiedStream) {
       if (lastAssistantMessageId) {
-        // Update the existing assistant message
         const updatedMessage = {
-          message: streamedMessage,
+          message: modifiedStream,
         };
         updateChatMessage(lastAssistantMessageId, updatedMessage);
       } else {
-        // Create a new assistant message
         const newAssistantMessage: MessageChat = {
           id: Date.now().toString(),
           sender: "assistant",
-          message: streamedMessage,
+          message: modifiedStream,
           timestamp: new Date().toISOString(),
         };
         addChatMessages(newAssistantMessage);
-
-        // Update lastAssistantMessageId
         setLastAssistantMessageId(newAssistantMessage.id);
       }
     }
@@ -107,9 +111,15 @@ export const PlaygroundPage: React.FC<PlaygroundPageProps> = ({
       stop,
       newUserPrompt,
     } = store;
+    if (!model) {
+      toast("error", {
+        description: "There is no model selected",
+      });
+      return;
+    }
 
     const dataToEmit: SubmitModelSchemaProps = {
-      model: model?.name,
+      model: model.name,
       systemPrompt,
       messages,
       temperature: temperature[0],
@@ -162,20 +172,47 @@ export const PlaygroundPage: React.FC<PlaygroundPageProps> = ({
             <div key={chat.id} className={`message ${chat.sender}`}>
               <div
                 className={cn(
-                  "flex w-full max-w-[55%] flex-col gap-2 rounded-lg px-3 py-2 text-sm",
+                  "flex w-full flex-col gap-2 rounded-lg px-3 py-2 text-sm my-3",
                   chat.sender === "user"
                     ? "w-max ml-auto bg-primary text-primary-foreground"
                     : "bg-secondary",
                 )}
               >
-                {chat.message}
+                {chat.sender === "assistant" ? (
+                  <ReactMarkdown
+                    children={chat.message}
+                    components={{
+                      code(props) {
+                        const { children, className, inline, node, ...rest } =
+                          props;
+                        const match = /language-(\w+)/.exec(className || "");
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            {...rest}
+                            children={String(children).replace(/\n$/, "")}
+                            style={vscDarkPlus}
+                            language={match[1]}
+                          />
+                        ) : (
+                          <code {...rest} className={className}>
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  />
+                ) : (
+                  chat.message
+                )}
               </div>
             </div>
           ))}
         </ScrollArea>
       </div>
       <div className="flex items-center space-x-2">
-        <Button onClick={() => handleSubmit()}>Submit</Button>
+        <Button onClick={() => handleSubmit()} disabled={!isStreamingComplete}>
+          Submit
+        </Button>
         <Button variant="secondary">
           <span className="sr-only">Show history</span>
           <CounterClockwiseClockIcon className="h-4 w-4" />
