@@ -13,6 +13,7 @@ import { PlaygroundSidebar } from "~/integrations/shadcn/playground/playground-s
 
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { HumanMessage, SystemMessage } from "langchain/schema";
+import { chatCompletion } from "~/lib/langchain/openai/utils";
 
 const QPlaygroundPage = qwikify$(PlaygroundPage, { eagerness: "hover" });
 const QPlaygroundToolbar = qwikify$(PlaygroundToolbar, { eagerness: "hover" });
@@ -20,56 +21,9 @@ const QPlaygroundSidebar = qwikify$(PlaygroundSidebar, { eagerness: "idle" });
 
 const streamChat = server$(async function* (e: SubmitModelSchemaProps) {
   console.log("submitted values: ", e);
-  let resolveToken: (value: string) => void;
-  let isStreamEnded = false;
-  //
-  const chat = new ChatOpenAI({
-    openAIApiKey: (import.meta as any).env.VITE_OPENAI_API_KEY ?? "",
-    modelName: e.model,
-    temperature: e.temperature,
-    maxTokens: e.maxLength,
-    topP: e.topP,
-    frequencyPenalty: e.frequencyPenalty,
-    presencePenalty: e.presencePenalty,
-    stop: e.stop ?? [],
-
-    // non configurable options
-    streaming: true,
-  });
-  //
-  // Function to handle token and resolve promise
-  const handleLLMNewToken = (token: string) => {
-    if (resolveToken) {
-      resolveToken(token);
-    }
-  };
-
-  const handleLLMEnd = (out: LLMResult) => {
-    console.log(out);
-    isStreamEnded = true; // Set the flag to true when the stream ends
-  };
-
-  const res = chat.call(
-    [new SystemMessage(e.systemPrompt), new HumanMessage(e.newUserPrompt)],
-    {
-      callbacks: [
-        {
-          handleLLMNewToken,
-          handleLLMEnd, // Make sure to include this in your callbacks
-        },
-      ],
-    },
-  );
-
-  for (;;) {
-    if (isStreamEnded) {
-      return null;
-    } // Break the loop if the stream has ended
-    const tokenPromise = new Promise<string>((resolve) => {
-      resolveToken = resolve;
-    });
-    const token = await tokenPromise;
-    yield token;
+  const generator = chatCompletion(e);
+  for await (const chunk of generator) {
+    yield chunk as string;
   }
 });
 
